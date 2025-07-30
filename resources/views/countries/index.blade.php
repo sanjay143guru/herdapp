@@ -1,6 +1,19 @@
 @extends('layouts.app')
 
 @section('content')
+    @php
+        function formatPopulation($number)
+        {
+            if ($number >= 1000000) {
+                return round($number / 1000000) . ' million';
+            } elseif ($number >= 1000) {
+                return round($number / 1000) . ' thousand';
+            } else {
+                return $number;
+            }
+        }
+    @endphp
+
     <div class="container mt-4">
 
         <h1>Countries List</h1>
@@ -28,7 +41,7 @@
                     @foreach($countries as $country)
                         <tr>
                             <td>{{ $country->name }}</td>
-                            <td>{{ number_format($country->population) }}</td>
+                            <td>{{ formatPopulation($country->population) }}</td> {{-- Changed here --}}
                             <td>
                                 <a href="{{ route('countries.edit', $country->id) }}" class="btn btn-sm btn-warning">
                                     Edit

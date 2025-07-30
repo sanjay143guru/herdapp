@@ -6,28 +6,12 @@ Route::get('/', function () {
     return redirect()->route('countries.index');
 });
 
-// Resource controller using string syntax (Laravel 5.4 way)
+// Resource controller (Laravel 5.4 string syntax)
 Route::resource('countries', 'CountryController');
 
-// Extra routes if needed
-Route::get('/update-third-country', function () {
-    $country = \App\Country::orderBy('population', 'desc')
-        ->orderBy('name', 'asc')
-        ->skip(2)
-        ->first();
+// Custom routes pointing to controller methods
+Route::get('/update-third-country', 'CountryController@updateThirdCountryPopulation')->name('countries.updateThird');
 
-    if ($country) {
-        $country->population = ceil($country->population / 1000000) * 1000000;
-        $country->save();
-        return "Updated {$country->name} to " . number_format($country->population);
-    }
+Route::get('/delete-uk', 'CountryController@deleteUnitedKingdom')->name('countries.deleteUk');
 
-    return 'No third country found.';
-});
-
-Route::get('/delete-uk', function () {
-    $deleted = \App\Country::where('name', 'United Kingdom')->delete();
-
-    return $deleted ? "United Kingdom deleted." : "United Kingdom not found.";
-});
 Route::get('/countries/search', 'CountryController@search')->name('countries.search');
