@@ -4,40 +4,38 @@ namespace App\Http\Controllers;
 
 use App\Country;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class CountryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
         $countries = Country::orderBy('population', 'desc')
             ->orderBy('name', 'asc')
             ->paginate(5);
+
         return view('countries.index', compact('countries'));
     }
 
-
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function search(Request $request)
     {
-        //
+        $query = $request->input('query');
+
+        $countries = Country::where('name', 'like', '%' . $query . '%')
+            ->orWhere('population', 'like', '%' . $query . '%')
+            ->orderBy('population', 'desc')
+            ->orderBy('name', 'asc')
+            ->paginate(5);
+
+        return view('countries.index', compact('countries'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+    public function create()
+    {
+        return view('countries.create');
+    }
+
     public function store(Request $request)
     {
         $this->validate($request, [
@@ -45,54 +43,46 @@ class CountryController extends Controller
             'population' => 'required|integer|min:1',
         ]);
 
+        $country = Country::create([
+            'name' => $request->name,
+            'population' => $request->population,
+        ]);
+
+        return redirect()->route('countries.show', ['country' => $country->id])
+            ->with('success', 'Country added successfully!');
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Country  $country
-     * @return \Illuminate\Http\Response
-     */
     public function show(Country $country)
     {
-        //
+        return view('countries.show', compact('country'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Country  $country
-     * @return \Illuminate\Http\Response
-     */
     public function edit(Country $country)
     {
-        //
+        return view('countries.edit', compact('country'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Country  $country
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, Country $country)
     {
         $this->validate($request, [
-            'name' => 'required|string|unique:countries,name',
+            'name' => 'required|string|unique:countries,name,' . $country->id,
             'population' => 'required|integer|min:1',
         ]);
 
+        $country->update([
+            'name' => $request->name,
+            'population' => $request->population,
+        ]);
+
+        return redirect()->route('countries.index')
+            ->with('success', 'Country updated successfully!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Country  $country
-     * @return \Illuminate\Http\Response
-     */
     public function destroy(Country $country)
     {
-        //
+        $country->delete();
+
+        return redirect()->route('countries.index')
+            ->with('success', 'Country deleted successfully!');
     }
 }

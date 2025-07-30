@@ -1,17 +1,17 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Country; // For Laravel 5.4, models usually in App namespace
 
 Route::get('/', function () {
     return redirect()->route('countries.index');
 });
 
-// Laravel 5.4 resource route syntax
+// Resource controller using string syntax (Laravel 5.4 way)
 Route::resource('countries', 'CountryController');
 
+// Extra routes if needed
 Route::get('/update-third-country', function () {
-    $country = Country::orderBy('population', 'desc')
+    $country = \App\Country::orderBy('population', 'desc')
         ->orderBy('name', 'asc')
         ->skip(2)
         ->first();
@@ -26,19 +26,8 @@ Route::get('/update-third-country', function () {
 });
 
 Route::get('/delete-uk', function () {
-    $deleted = Country::where('name', 'United Kingdom')->delete();
+    $deleted = \App\Country::where('name', 'United Kingdom')->delete();
 
-    if ($deleted) {
-        return "United Kingdom deleted.";
-    } else {
-        return "United Kingdom not found.";
-    }
+    return $deleted ? "United Kingdom deleted." : "United Kingdom not found.";
 });
-
-Route::get('/test-route', function () {
-    return 'Test route works!';
-})->name('test.route');
-
-Route::get('/test-route2', function () {
-    return 'Test route 2 works!';
-})->name('test.route2');
+Route::get('/countries/search', 'CountryController@search')->name('countries.search');
